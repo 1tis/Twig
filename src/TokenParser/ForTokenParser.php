@@ -38,6 +38,11 @@ final class ForTokenParser extends AbstractTokenParser
         $stream->expect(/* Token::OPERATOR_TYPE */ 8, 'in');
         $seq = $this->parser->getExpressionParser()->parseExpression();
 
+        $ifexpr = null;
+        if ($stream->nextIf(Token::NAME_TYPE, 'if')) {
+            $ifexpr = $this->parser->getExpressionParser()->parseExpression();
+        }
+        
         $stream->expect(/* Token::BLOCK_END_TYPE */ 3);
         $body = $this->parser->subparse([$this, 'decideForFork']);
         if ('else' == $stream->next()->getValue()) {
@@ -58,7 +63,7 @@ final class ForTokenParser extends AbstractTokenParser
         }
         $valueTarget = new AssignNameExpression($valueTarget->getAttribute('name'), $valueTarget->getTemplateLine());
 
-        return new ForNode($keyTarget, $valueTarget, $seq, null, $body, $else, $lineno, $this->getTag());
+        return new ForNode($keyTarget, $valueTarget, $seq, $ifexpr, $body, $else, $lineno, $this->getTag());
     }
 
     public function decideForFork(Token $token): bool
